@@ -90,7 +90,7 @@ EOF
 cat > /etc/sysconfig/autofsck << EOF
 AUTOFSCK_DEF_CHECK=yes
 PROMPT=no
-AUTOFSCK_OPT=“-y”
+AUTOFSCK_OPT="-y"
 AUTOFSCK_TIMEOUT=10
 EOF
 
