@@ -70,7 +70,16 @@ mounts:
 EOF
 
 # cloud-init kludges
-echo -n > /etc/udev/rules.d/70-persistent-net.rules
+cat > /etc/udev/rules.d/70-persistent-net.rules <<'EOF'
+#OnMetal v1
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:08:00.0", NAME="eth0"
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:08:00.1", NAME="eth1"
+
+#OnMetal v2
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:03:00.0", NAME="eth0"
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:03:00.1", NAME="eth1"
+EOF
+
 echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 
 # minimal network conf that doesnt dhcp

@@ -7,56 +7,19 @@ apt-get -y dist-upgrade
 # fix bootable flag
 parted -s /dev/sda set 1 boot on
 
+#install dep removed from packages
+pip install python-jwt
+
 # custom teeth cloud-init bit
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py3.4-systemd.deb
+#wget https://e0399644aa2564da8102-cbe1f047c5bc5210015df7087c6eeb9e.ssl.cf5.rackcdn.com/cloud-init_0.7.5-1rackspace4_all.deb
+wget http://10.69.246.205/cloud-init/cloud-init_0.7.7_systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
-
 # breaks networking if missing
-mkdir -p /run/network
+#mkdir -p /run/network
 
 # cloud-init kludges
 addgroup --system --quiet netdev
-echo -n > /etc/udev/rules.d/70-persistent-net.rules
-ln -s /dev/null /etc/udev/rules.d/75-persistent-net-generator.rules
-echo -n > /etc/udev/rules.d/80-net-name-slot.rules
-echo -n > /etc/udev/rules.d/80-net-setup-link.rules
-
-mkdir -p /etc/systemd/network
-# OMv1
-cat > /etc/systemd/network/10-internet.link <<'EOF'
-[Match]
-Path=pci-0000:03:00.0-*
-
-[Link]
-Name=eth0
-EOF
-
-cat > /etc/systemd/network/11-internet.link <<'EOF'
-[Match]
-Path=pci-0000:03:00.1-*
-
-[Link]
-Name=eth1
-EOF
-
-# OMv2
-cat > /etc/systemd/network/12-internet.link <<'EOF'
-[Match]
-Path=pci-0000:08:00.0-*
-
-[Link]
-Name=eth0
-EOF
-
-cat > /etc/systemd/network/13-internet.link <<'EOF'
-[Match]
-Path=pci-0000:08:00.1-*
-
-[Link]
-Name=eth1
-EOF
-
 #echo -n > /etc/udev/rules.d/70-persistent-net.rules
 #echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 #ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
@@ -82,27 +45,6 @@ system_info:
      shell: /bin/bash
 bootcmd:
   - /bin/sh -ec 'for i in $(ifquery --list --exclude lo --allow auto); do INTERFACES="$INTERFACES$i "; done; [ -n "$INTERFACES" ] || exit 0; while ! ifquery --state $INTERFACES >/dev/null; do sleep 1; done; for i in $INTERFACES; do while [ -e /run/network/ifup-$i.pid ]; do sleep 0.2; done; done'
-
-cloud_config_modules:
- - emit_upstart
- - disk_setup
- - ssh-import-id
- - locale
- - set-passwords
- - snappy
- - grub-dpkg
- - apt-pipelining
- - apt-configure
- - package-update-upgrade-install
- - landscape
- - timezone
- - puppet
- - chef
- - salt-minion
- - mcollective
- - disable-ec2-metadata
- - runcmd
- - byobu
 EOF
 
 # preseeds/debconf do not work for this anymore :(
@@ -129,6 +71,10 @@ ff02::2 ip6-allrouters
 127.0.0.1 localhost
 EOF
 
+# set some stuff
+#echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
+#echo 'vm.swappiness = 0' >> /etc/sysctl.conf
+
 cat >> /etc/sysctl.conf <<'EOF'
 net.ipv4.tcp_rmem = 4096 87380 33554432
 net.ipv4.tcp_wmem = 4096 65536 33554432
@@ -137,11 +83,13 @@ net.core.wmem_max = 33554432
 net.ipv4.tcp_window_scaling = 1
 net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
-vm.dirty_ratio=5
 EOF
 
 # add support for Intel RSTe
+# note: may need to add in additional commands for v1 support
 e2label /dev/sda1 root
+# think this should already be done in kickstart:
+# apt-get install -y mdadm
 rm /etc/mdadm/mdadm.conf
 cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
 echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
@@ -156,17 +104,46 @@ echo "8021q" >> /etc/modules
 cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
 blacklist mei_me
 EOF
-update-initramfs -u -k all
+update-initramfs -u
 
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="acpi=noirq noapic biosdevname=0 net.ifnames=0 cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
+#sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames=0 biosdevname=0 cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
+#echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 update-grub
-
 # Fix grub config laid onto disk
 sed -i 's/root=\/dev\/sda1/root=LABEL=root/g' /boot/grub/grub.cfg
+
+# setup a usable console
+cat > /etc/init/ttyS0.conf <<'EOF'
+# ttyS0 - getty
+#
+# This service maintains a getty on ttyS1 from the point the system is
+# started until it is shut down again.
+
+start on stopped rc RUNLEVEL=[2345]
+stop on runlevel [!2345]
+
+respawn
+exec /sbin/getty -L 115200 ttyS0 xterm
+EOF
+
+# setup a usable console
+cat > /etc/init/ttyS4.conf <<'EOF'
+# ttyS4 - getty
+#
+# This service maintains a getty on ttyS1 from the point the system is
+# started until it is shut down again.
+
+start on stopped rc RUNLEVEL=[2345]
+stop on runlevel [!2345]
+
+respawn
+exec /sbin/getty -L 115200 ttyS4 xterm
+EOF
 
 cat > /etc/rc.local <<'EOF'
 #!/bin/sh -e
@@ -193,8 +170,8 @@ EOF
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Ubuntu_15.10_Teeth
+wget http://10.69.246.205/kickstarts/package_postback.sh
+bash package_postback.sh Ubuntu_14.04_Teeth
 
 # clean up
 passwd -d root
