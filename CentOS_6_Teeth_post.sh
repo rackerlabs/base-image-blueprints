@@ -58,6 +58,15 @@ EOF
 #echo -n > /etc/udev/rules.d/70-persistent-net.rules
 #echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 #ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+cat > /etc/udev/rules.d/70-persistent-net.rules <<'EOF'
+#OnMetal v1
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:08:00.0", NAME="eth0"
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:08:00.1", NAME="eth1"
+
+#OnMetal v2
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:03:00.0", NAME="eth0"
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:03:00.1", NAME="eth1"
+EOF
 
 # simple eth0 config, again not hard-coded to the build hardware
 #cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF

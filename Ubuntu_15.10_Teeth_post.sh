@@ -18,8 +18,48 @@ mkdir -p /run/network
 # cloud-init kludges
 addgroup --system --quiet netdev
 echo -n > /etc/udev/rules.d/70-persistent-net.rules
-echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+ln -s /dev/null /etc/udev/rules.d/75-persistent-net-generator.rules
+echo -n > /etc/udev/rules.d/80-net-name-slot.rules
+echo -n > /etc/udev/rules.d/80-net-setup-link.rules
+
+mkdir -p /etc/systemd/network
+# OMv1
+cat > /etc/systemd/network/10-internet.link <<'EOF'
+[Match]
+Path=pci-0000:03:00.0-*
+
+[Link]
+Name=eth0
+EOF
+
+cat > /etc/systemd/network/11-internet.link <<'EOF'
+[Match]
+Path=pci-0000:03:00.1-*
+
+[Link]
+Name=eth1
+EOF
+
+# OMv2
+cat > /etc/systemd/network/12-internet.link <<'EOF'
+[Match]
+Path=pci-0000:08:00.0-*
+
+[Link]
+Name=eth0
+EOF
+
+cat > /etc/systemd/network/13-internet.link <<'EOF'
+[Match]
+Path=pci-0000:08:00.1-*
+
+[Link]
+Name=eth1
+EOF
+
+#echo -n > /etc/udev/rules.d/70-persistent-net.rules
+#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+#ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
 
 
 # cloud-init debug logging
@@ -121,7 +161,7 @@ update-initramfs -u -k all
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="acpi=noirq noapic cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="acpi=noirq noapic biosdevname=0 net.ifnames=0 cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 update-grub
 
