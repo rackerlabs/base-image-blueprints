@@ -8,7 +8,7 @@ apt-get -y dist-upgrade
 parted -s /dev/sda set 1 boot on
 
 # custom teeth cloud-init bit
-wget http://10.69.246.205/cloud-init/cloud-init_0.7.7-py3.4-systemd.deb
+wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py3.4-systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
@@ -161,7 +161,7 @@ EOF
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
 # log packages
-wget http://10.69.246.205/kickstarts/package_postback.sh
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_16.04_Teeth
 
 # clean up
