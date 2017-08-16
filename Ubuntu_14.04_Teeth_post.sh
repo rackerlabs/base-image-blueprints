@@ -2,7 +2,7 @@
 
 # update
 apt-get update
-apt-get -y dist-upgrade
+apt-get -y upgrade
 
 apt-get -y purge biosdevname
 
@@ -12,6 +12,14 @@ e2label /dev/sda1 root
 
 # Remove mdadm conf for universal
 rm /etc/mdadm/mdadm.conf
+
+# Installing the wanted vlan package
+wget http://KICK_HOST/packages/debian/vlan_1.9-3ubuntu10_amd64.deb
+dpkg -i vlan_1.9-3ubuntu10_amd64.deb
+
+# Pin package version for vlan so an upgrade does not occur
+echo -e 'Package: vlan\nPin: version 1.9-3ubuntu10\nPin-Priority: -1' > /etc/apt/preferences.d/vlan
+
 
 # custom teeth cloud-init bit
 wget http://KICK_HOST/cloud-init/cloud-init_0.7.7.2-py2-upstart.deb
@@ -178,4 +186,3 @@ rm -rf /tmp/tmp
 find /var/log -type f -exec truncate -s 0 {} \;
 find /tmp -type f -delete
 find /root -type f ! -iname ".*" -delete
-
