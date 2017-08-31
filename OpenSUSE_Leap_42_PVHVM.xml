@@ -4,9 +4,9 @@
   <add-on>
     <add_on_products config:type="list">
       <listentry>
-        <media_url><![CDATA[http://mirror.rackspace.com/opensuse/update/leap/42.1/oss]]></media_url>
-        <name>openSUSE-42.1-updates</name>
-        <alias>openSUSE-42.1-updates</alias>
+        <media_url><![CDATA[http://mirror.rackspace.com/opensuse/update/leap/42.3/oss]]></media_url>
+        <name>openSUSE-42.3-updates</name>
+        <alias>openSUSE-42.3-updates</alias>
         <product_dir>/</product_dir>
       </listentry>
     </add_on_products>
@@ -329,7 +329,7 @@ server 3.opensuse.pool.ntp.org prefer
       config:type="boolean">true</stop_on_solver_conflict>
   </upgrade>
     <image/>
-    <instsource>http://mirror.rackspace.com/opensuse/distribution/leap/42.1/repo/oss/</instsource>
+    <instsource>http://mirror.rackspace.com/opensuse/distribution/leap/42.3/repo/oss/</instsource>
     <packages config:type="list">
       <package>autoyast2</package>
       <package>crda</package>
@@ -447,6 +447,7 @@ rm -f /etc/growroot-disabled
 # so "bootloader" above is disabled and the things below done manually instead
 grub2-install /dev/hda
 echo 'GRUB_DISABLE_LINUX_UUID=true' >> /etc/default/grub
+echo 'GRUB_ENABLE_LINUX_LABEL=true' >> /etc/default/grub
 grub2-mkconfig --output=/boot/grub2/grub.cfg
 parted -s /dev/hda set 1 boot on
 chmod 000 /usr/lib/YaST2/startup/YaST2.Second-Stage
