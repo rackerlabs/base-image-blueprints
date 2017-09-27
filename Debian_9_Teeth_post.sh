@@ -8,11 +8,13 @@ parted -s /dev/sda set 1 boot on
 e2label /dev/sda1 root
 
 # replace the mdadm.conf w/ default universal config
-echo "CREATE owner=root group=disk mode=0660 auto=yes" > /etc/mdadm/mdadm.conf
-echo "HOMEHOST <system>" >> /etc/mdadm/mdadm.conf
-echo "MAILADDR root" >> /etc/mdadm/mdadm.conf
+cat > /etc/mdadm/mdadm.conf <<'EOF'
+CREATE owner=root group=disk mode=0660 auto=yes
+HOMEHOST <system>
+MAILADDR root
+EOF
 
-cat > /etc/initramfs-tools/conf.d/mdadm<<'EOF'
+cat > /etc/initramfs-tools/conf.d/mdadm <<'EOF'
 ## mdadm boot_degraded configuration
 ##
 BOOT_DEGRADED=true
