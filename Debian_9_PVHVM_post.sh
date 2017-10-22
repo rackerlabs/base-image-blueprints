@@ -78,33 +78,31 @@ sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
 update-rc.d xe-linux-distribution defaults
 
-# intention is to move this bit into nova-agent instead
-cat > /lib/systemd/system/nova-agent.service <<'EOF'
+# Update the systemd service file to get things started in the right order and add delay
+cat > /lib/systemd/system/python3-nova-agent.service <<'EOF'
 [Unit]
 Description=nova-agent
 Wants=local-fs.target
 After=local-fs.target xe-linux-distribution.service
 
 [Service]
-Type=oneshot
-ExecStart=/etc/init.d/nova-agent start
+Type=forking
+ExecStart=/usr/bin/nova-agent -o /var/log/nova-agent.log -l info
 ExecStartPost=/bin/sleep 20
-RemainAfterExit=yes
-TimeoutSec=0
-
-# Output needs to appear in instance console output
-StandardOutput=journal+console
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=basic.target
 EOF
-systemctl enable nova-agent
+
+# Ensure the agent is started at boot
+systemctl daemon-reload
+systemctl enable python3-nova-agent
 
 # delay network online state until nova-agent does its thing
 mkdir /etc/systemd/system/network-online.target.d
-cat > /etc/systemd/system/network-online.target.d/nova-agent.conf <<'EOF'
+cat > /etc/systemd/system/network-online.target.d/python3-nova-agent.conf <<'EOF'
 [Unit]
-After=nova-agent.service
+After=python3-nova-agent.service
 EOF
 
 # ssh permit rootlogin
