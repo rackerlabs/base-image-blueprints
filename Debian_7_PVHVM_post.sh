@@ -155,6 +155,17 @@ esac
 EOF
 insserv cloud-init-local
 
+# do this here so we have our mirror set
+cat > /etc/apt/sources.list <<'EOF'
+deb http://mirror.rackspace.com/debian wheezy main
+deb-src http://mirror.rackspace.com/debian wheezy main
+
+deb http://mirror.rackspace.com/debian/ wheezy-backports main
+
+deb http://mirror.rackspace.com/debian-security/ wheezy/updates main
+deb-src http://mirror.rackspace.com/debian-security/ wheezy/updates main
+EOF
+
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_7_PVHVM
