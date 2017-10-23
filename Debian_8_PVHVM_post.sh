@@ -99,26 +99,8 @@ EOF
 sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
 update-rc.d xe-linux-distribution defaults
 
-# intention is to move this bit into nova-agent instead
-cat > /lib/systemd/system/nova-agent.service <<'EOF'
-[Unit]
-Description=nova-agent
-Wants=local-fs.target
-After=local-fs.target xe-linux-distribution.service
-
-[Service]
-Type=oneshot
-ExecStart=/etc/init.d/nova-agent start
-RemainAfterExit=yes
-TimeoutSec=0
-
-# Output needs to appear in instance console output
-StandardOutput=journal+console
-
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl enable nova-agent
+# Ensure things are started
+systemctl enable python-nova-agent
 systemctl enable cloud-init-local
 
 # ssh permit rootlogin
