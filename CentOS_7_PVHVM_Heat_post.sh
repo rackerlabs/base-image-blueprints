@@ -10,18 +10,16 @@ yum install -y \
   openssl-devel \
   libffi-devel \
   libxml2-devel \
-  libxslt-devel \
-  salt-minion \
-  puppet
+  libxslt-devel
 
 # Install Chef
 curl -L https://www.chef.io/chef/install.sh | sudo bash -
 
 # Disable Salt-Minion daemon (to prevent polling)
-systemctl disable salt-minion.service
+# systemctl disable salt-minion.service
 
 # Disble Puppet daemon (to prevent polling)
-systemctl disable puppet.service
+# systemctl disable puppet.service
 
 # Write '/etc/os-collect-config.conf'
 cat > /etc/os-collect-config.conf <<'EOF'
