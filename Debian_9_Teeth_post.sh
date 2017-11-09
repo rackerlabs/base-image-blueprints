@@ -61,19 +61,20 @@ EOF
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
+datasource_list: [ ConfigDrive, None ]
 disable_root: False
 ssh_pwauth: False
 ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
-apt_preserve_sources_list: True
+growpart:
+  mode: auto
+  devices: ['/']
 system_info:
    distro: debian
    default_user:
      name: root
      lock_passwd: True
-     gecos: Debian
-     shell: /bin/bash
 
 cloud_config_modules:
  - emit_upstart
@@ -95,6 +96,19 @@ cloud_config_modules:
  - disable-ec2-metadata
  - runcmd
  - byobu
+
+cloud_init_modules:
+ - migrator
+ - bootcmd
+ - write-files
+ - growpart
+ - resizefs
+ - set_hostname
+ - update_hostname
+ - update_etc_hosts
+ - rsyslog
+ - users-groups
+ - ssh
 EOF
 
 # cloud-init kludges
