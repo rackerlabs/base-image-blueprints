@@ -26,6 +26,9 @@ echo manual | tee /etc/init/salt-minion.override
 # Disble Puppet daemon (to prevent polling)
 update-rc.d -f puppet remove
 
+# update all the things
+apt-get update && apt-get -y dist-upgrade
+
 # Write '/etc/os-collect-config.conf'
 cat > /etc/os-collect-config.conf <<'EOF'
 [DEFAULT]
@@ -450,21 +453,30 @@ def main(argv=sys.argv):
     with os.fdopen(os.open(fn, os.O_CREAT | os.O_WRONLY, 0o600), 'w') as f:
         f.write(c.get('config', '').encode('utf-8'))
 
+    current_environment = os.environ.copy()
+    current_environment["ANSIBLE_ROLES_PATH"] = "/etc/ansible/roles"
+    current_environment["ANSIBLE_REMOTE_TEMP"] = "/root"
+
     cmd = [
         'ansible-playbook',
         '-i',
-        'localhost,',
+        'localhost',
         fn,
         '--extra-vars',
         '@%s' % vars_filename
     ]
     log.debug('Running %s' % (' '.join(cmd),))
     try:
-        subproc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+        subproc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=current_environment
+        )
     except OSError:
         log.warn("ansible not installed yet")
         return
+
     stdout, stderr = subproc.communicate()
 
     log.info('Return code %s' % subproc.returncode)
@@ -557,6 +569,7 @@ def run_subproc(fn, **kwargs):
     if not ret:
         ret = 0
     return ret, stdout, stderr
+
 def main(argv=sys.argv):
     log = logging.getLogger('heat-config')
     handler = logging.StreamHandler(sys.stderr)
