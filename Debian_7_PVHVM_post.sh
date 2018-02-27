@@ -187,6 +187,9 @@ deb http://mirror.rackspace.com/debian-security/ wheezy/updates main
 deb-src http://mirror.rackspace.com/debian-security/ wheezy/updates main
 EOF
 
+# Make sure everything is up to date
+apt-get update && apt-get -y dist-upgrade
+
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_7_PVHVM
