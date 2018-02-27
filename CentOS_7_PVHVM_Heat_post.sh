@@ -447,18 +447,26 @@ def main(argv=sys.argv):
     with os.fdopen(os.open(fn, os.O_CREAT | os.O_WRONLY, 0o600), 'w') as f:
         f.write(c.get('config', '').encode('utf-8'))
 
+    current_environment = os.environ.copy()
+    current_environment["ANSIBLE_ROLES_PATH"] = "/etc/ansible/roles"
+    current_environment["ANSIBLE_REMOTE_TEMP"] = "/root"
+
     cmd = [
         'ansible-playbook',
         '-i',
-        'localhost,',
+        'localhost',
         fn,
         '--extra-vars',
         '@%s' % vars_filename
     ]
     log.debug('Running %s' % (' '.join(cmd),))
     try:
-        subproc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+        subproc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=current_environment
+        )
     except OSError:
         log.warn("ansible not installed yet")
         return
