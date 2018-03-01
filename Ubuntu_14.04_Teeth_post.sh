@@ -165,10 +165,6 @@ depmod -a
 update-initramfs -u -k all
 sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
 
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Ubuntu_14.04_Teeth
-
 # clean up
 passwd -d root
 passwd -l root

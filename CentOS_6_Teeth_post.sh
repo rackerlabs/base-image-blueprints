@@ -171,10 +171,6 @@ sed -i 's%root=.*%root=LABEL=/ 8250.nr_uarts=5 modprobe.blacklist=mei_me acpi=no
 sed -i '/splashimage/d' /boot/grub/grub.conf
 sed -i 'g/SELINUX=*/SELINUX=disabled/s' /etc/selinux/config
 
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh CentOS_6_Teeth
-
 # clean up
 yum clean all
 passwd -d root

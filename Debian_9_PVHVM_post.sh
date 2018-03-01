@@ -156,10 +156,6 @@ EOF
 # update all the things
 apt-get update && apt-get -y dist-upgrade
 
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Debian_9_PVHVM
-
 # clean up
 passwd -d root
 apt-get -y clean

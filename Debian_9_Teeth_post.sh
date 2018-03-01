@@ -218,10 +218,6 @@ echo '#!/bin/bash' > /etc/rc.local
 echo 'exit 0' >> /etc/rc.local
 EOF
 
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Debian_Testing_Teeth
-
 # clean up
 passwd -d root
 passwd -l root
