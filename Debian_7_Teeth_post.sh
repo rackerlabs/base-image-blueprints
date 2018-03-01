@@ -170,10 +170,6 @@ echo "sleep 9" >> /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 update-initramfs -u -k all
 
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Debian_7_Teeth
-
 # fsck no autorun on reboot
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
