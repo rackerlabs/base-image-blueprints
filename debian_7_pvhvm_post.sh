@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# fix bootable flag
+# fix boot flag
 parted -s /dev/xvda set 1 boot on
 
 # Debian puts these in the wrong order from what we need

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set rackspace mirrors
+# set rackspace mirrors up
 echo "Setting up Rackspace mirrors"
 sed -i 's/mirror.centos.org/mirror.rackspace.com/g' /etc/yum.repos.d/CentOS-Base.repo
 sed -i 's%baseurl.*%baseurl=http://mirror.rackspace.com/epel/6/x86_64/%g' /etc/yum.repos.d/epel.repo

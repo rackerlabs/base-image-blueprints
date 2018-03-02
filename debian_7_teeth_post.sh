@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# fix bootable flag
+# fix boot flag
 parted -s /dev/sda set 1 boot on
 e2label /dev/sda1 root
 
