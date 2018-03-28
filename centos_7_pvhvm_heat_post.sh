@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Update repositories and install required packages for SoftwareConfig Agents and Ansible
+# Update repositories and install packages
 yum install -y \
   python-pip \
   git \
