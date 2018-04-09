@@ -47,27 +47,6 @@ system_info:
      lock_passwd: True
      gecos: Ubuntu
      shell: /bin/bash
-
-cloud_config_modules:
- - emit_upstart
- - disk_setup
- - ssh-import-id
- - locale
- - set-passwords
- - snappy
- - grub-dpkg
- - apt-pipelining
- - apt-configure
- - package-update-upgrade-install
- - landscape
- - timezone
- - puppet
- - chef
- - salt-minion
- - mcollective
- - disable-ec2-metadata
- - runcmd
- - byobu
 EOF
 
 # preseeds/debconf do not work for this anymore :(

@@ -149,21 +149,6 @@ system_info:
     lock_passwd: True
     gecos: CentOS cloud-init user
     shell: /bin/bash
-cloud_config_modules:
- - disk_setup
- - ssh-import-id
- - locale
- - set-passwords
- - package-update-upgrade-install
- - landscape
- - timezone
- - puppet
- - chef
- - salt-minion
- - mcollective
- - disable-ec2-metadata
- - runcmd
- - byobu
 EOF
 
 # force grub to use generic disk labels, bootloader above does not do this
