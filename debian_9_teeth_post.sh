@@ -67,6 +67,7 @@ ssh_pwauth: False
 ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
+apt_preserve_sources_list: True
 growpart:
   mode: auto
   devices: ['/']
