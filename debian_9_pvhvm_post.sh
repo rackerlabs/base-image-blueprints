@@ -13,39 +13,21 @@ EOF
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
+datasource_list: [ ConfigDrive, None ]
+manage-resolv-conf: False
 disable_root: False
 ssh_pwauth: True
 ssh_deletekeys: False
 resize_rootfs: noblock
-apt_preserve_sources_list: True
-manage-resolv-conf: False
 manage_etc_hosts: localhost
-cloud_config_modules:
- - disk_setup
- - mounts
- - ssh-import-id
- - locale
- - set-passwords
- - package-update-upgrade-install
- - landscape
- - timezone
- - puppet
- - chef
- - salt-minion
- - mcollective
- - disable-ec2-metadata
- - runcmd
- - byobu
-cloud_init_modules:
- - migrator
- - bootcmd
- - write-files
- - growpart
- - resizefs
- - update_etc_hosts
- - rsyslog
- - users-groups
- - ssh
+apt_preserve_sources_list: True
+network:
+  config: disabled
+growpart:
+  mode: auto
+  devices: ['/']
+system_info:
+  distro: debian
 EOF
 
 # cloud-init kludges

@@ -9,13 +9,11 @@ sed -i '/baseurl/s/# *//' /etc/yum.repos.d/epel.repo
 sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/CentOS-Base.repo
 sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
-#centos 6 specific, pin the kernel by downloading old one and removing current version
-echo "Pinning kernel"
-REMOVEKERNEL=$(rpm -q kernel)
-wget http://KICK_HOST/packages/centos/6/kernel-2.6.32-504.30.3.el6.x86_64.rpm
-wget http://KICK_HOST/packages/centos/6/kernel-headers-2.6.32-504.30.3.el6.x86_64.rpm
-yum -y localinstall kernel*
-#yum -y erase $REMOVEKERNEL ## <<- actually removing this strips out a ton of dependencies and results in a broken image :(
+# update all
+echo "Installing all updates"
+yum -y update
+
+# Ensure that the kernel does not get upgraded
 echo "exclude=kernel*" >> /etc/yum.conf
 
 # teeth specific initrd
@@ -29,11 +27,8 @@ chmod +x /etc/sysconfig/modules/onmetal.modules
 cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
 blacklist mei_me
 EOF
-dracut -f /boot/initramfs-2.6.32-504.30.3.el6.x86_64.img 2.6.32-504.30.3.el6.x86_64
 
-# update all
-echo "Installing all updates"
-yum -y update
+dracut -f
 
 # Non-firewalld-firewall
 echo -n "Writing static firewall"
@@ -73,6 +68,57 @@ sleep 12
 service network restart
 EOF
 chmod a+x /var/lib/cloud/scripts/per-instance/restartnetworkip6.sh
+
+cat > /etc/init.d/network-fix <<'EOF'
+#!/bin/sh
+#
+# set ethernet devices to promiscuous mode
+#
+# chkconfig:   2345 15 85
+# description: Sets ethernet devices to promiscuous mode
+
+### BEGIN INIT INFO
+# Provides:
+# Required-Start:    $local_fs $network $named $remote_fs cloud-init-local
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Sets ethernet devices to promiscuous mode
+# Description:       Sets ethernet devices to promiscuous mode so that bonding will work
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+loglevel="info"
+
+start() {
+    [ -x $exec ] || exit 5
+    INTERFACES=`/sbin/ip link | /bin/awk -F: '$0 !~ "lo|vir|wl|@|^[^0-9]"{print $2;getline}'`
+    for interface in $INTERFACES; do /sbin/ip link set $interface promisc on; done
+    retval=$?
+    echo "Networks set to promiscuous mode"
+    return $retval
+}
+
+case "$1" in
+    start)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+        exit 2
+        ;;
+esac
+exit $?
+EOF
+
+chmod a+x /etc/init.d/network-fix
+chkconfig network-fix on
+# Change cloud-init startup script to start after the network fix
+sed -i 's/remote_fs cloud-init-local/remote_fs network-fix cloud-init-local/' /etc/init.d/cloud-init
 
 # For cloud images, 'eth0' _is_ the predictable device name, since
 # we don't want to be tied to specific virtual (!) hardware
@@ -149,21 +195,23 @@ system_info:
     lock_passwd: True
     gecos: CentOS cloud-init user
     shell: /bin/bash
+
 cloud_config_modules:
- - disk_setup
- - ssh-import-id
- - locale
- - set-passwords
- - package-update-upgrade-install
- - landscape
- - timezone
- - puppet
- - chef
- - salt-minion
- - mcollective
- - disable-ec2-metadata
- - runcmd
- - byobu
+  - disk_setup
+  - mounts
+  - ssh-import-id
+  - locale
+  - set-passwords
+  - yum-add-repo
+  - package-update-upgrade-install
+  - timezone
+  - puppet
+  - chef
+  - salt-minion
+  - mcollective
+  - disable-ec2-metadata
+  - runcmd
+  - byobu
 EOF
 
 # force grub to use generic disk labels, bootloader above does not do this
