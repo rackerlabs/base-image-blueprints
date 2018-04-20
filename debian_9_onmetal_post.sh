@@ -39,9 +39,6 @@ wget http://KICK_HOST/misc/60-persistent-storage.rules-debu -O /etc/udev/rules.d
 cat /etc/udev/rules.d/21-persistent-local.rules >> /etc/udev/rules.d/60-persistent-storage.rules
 update-initramfs -u
 
-# teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
-#wget http://KICK_HOST/kickstarts/Teeth-cloud-init
-#cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
 wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py3.4-systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
