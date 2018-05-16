@@ -84,11 +84,6 @@ update-grub
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
-# Make change to xe-linux-distribution init file
-sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
-insserv xe-linux-distribution
-insserv python-nova-agent
-
 # Ensure cloud-init starts after python-nova-agent - Added X-Start-After header only
 cat > /etc/init.d/cloud-init-local <<'EOF'
 #! /bin/sh
