@@ -21,6 +21,7 @@ ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
 apt_preserve_sources_list: True
+ssh_genkeytypes: ['rsa', 'dsa', 'ecdsa', 'ed25519']
 network:
   config: disabled
 growpart:
@@ -34,8 +35,7 @@ EOF
 echo -n > /etc/udev/rules.d/70-persistent-net.rules
 echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 
-# minimal network conf that doesnt dhcp
-# causes boot delay if left out, no bueno
+# minimal network conf that does dhcp causes boot delay if left out
 cat > /etc/network/interfaces <<'EOF'
 auto lo
 iface lo inet loopback
@@ -64,7 +64,6 @@ net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
 EOF
 
-# our fstab is fonky
 cat > /etc/fstab <<'EOF'
 # /etc/fstab: static file system information.
 #
@@ -74,7 +73,6 @@ cat > /etc/fstab <<'EOF'
 #
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 /dev/xvda1	/               ext4    errors=remount-ro,noatime,barrier=0 0       1
-#/dev/xvdc1	none            swap    sw              0       0
 EOF
 
 # keep grub2 from using UUIDs and regenerate config
@@ -88,43 +86,35 @@ sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
 update-rc.d xe-linux-distribution defaults
 
-# Update the systemd service file to get things started in the right order and add delay
+# Update to nova-agent service file
 cat > /lib/systemd/system/python3-nova-agent.service <<'EOF'
 [Unit]
-Description=nova-agent
-Wants=local-fs.target
-After=local-fs.target xe-linux-distribution.service
+DefaultDependencies=no
+Description=Nova Agent for xenstore
+Before=cloud-init.service
 
 [Service]
-Type=forking
-ExecStart=/usr/bin/nova-agent -o /var/log/nova-agent.log -l info
-ExecStartPost=/bin/sleep 20
+Type=notify
+TimeoutStartSec=360
+ExecStart=/usr/bin/nova-agent --no-fork True -o /var/log/nova-agent.log -l info
 
 [Install]
-WantedBy=basic.target
+WantedBy=multi-user.target
 EOF
 
-# Ensure the agent is started at boot
-systemctl daemon-reload
-systemctl enable python3-nova-agent
-
-# delay network online state until nova-agent does its thing
 mkdir /etc/systemd/system/network-online.target.d
 cat > /etc/systemd/system/network-online.target.d/python3-nova-agent.conf <<'EOF'
 [Unit]
 After=python3-nova-agent.service
 EOF
 
+# Ensure the agent is started at boot
+systemctl enable python3-nova-agent
+systemctl enable xe-linux-distribution
+systemctl daemon-reload
+
 # ssh permit rootlogin
 sed -i '/^PermitRootLogin/s/prohibit-password/yes/g' /etc/ssh/sshd_config
-
-# cloud-init doesn't generate a ssh_host_ed25519_key
-cat > /etc/rc.local <<'EOF'
-#!/bin/bash
-dpkg-reconfigure openssh-server
-echo '#!/bin/bash' > /etc/rc.local
-echo 'exit 0' >> /etc/rc.local
-EOF
 
 # do this here so we have our mirror set
 cat > /etc/apt/sources.list <<'EOF'
