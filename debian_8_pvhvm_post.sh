@@ -64,7 +64,6 @@ net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
 EOF
 
-# our fstab is fonky
 cat > /etc/fstab <<'EOF'
 # /etc/fstab: static file system information.
 #
@@ -74,7 +73,6 @@ cat > /etc/fstab <<'EOF'
 #
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 /dev/xvda1	/               ext4    errors=remount-ro,noatime,barrier=0 0       1
-#/dev/xvdc1	none            swap    sw              0       0
 EOF
 
 # keep grub2 from using UUIDs and regenerate config
@@ -84,29 +82,6 @@ update-grub
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
-# cloud-init / nova-agent sad panda hacks
-cat > /lib/systemd/system/cloud-init-local.service <<'EOF'
-[Unit]
-Description=Initial cloud-init job (pre-networking)
-Wants=local-fs.target
-After=local-fs.target
-
-[Service]
-Type=oneshot
-ExecStartPre=/bin/sleep 20
-ExecStart=/usr/bin/cloud-init init --local
-RemainAfterExit=yes
-TimeoutSec=0
-
-# Output needs to appear in instance console output
-StandardOutput=journal+console
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# some systemd workarounds
-sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
 update-rc.d xe-linux-distribution defaults
 
 # Ensure things are started
