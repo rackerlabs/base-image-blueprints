@@ -19,6 +19,7 @@ disable_root: False
 ssh_pwauth: True
 ssh_deletekeys: False
 resize_rootfs: noblock
+preserve_hostname: true
 manage_etc_hosts: localhost
 apt_preserve_sources_list: True
 ssh_genkeytypes: ['rsa', 'dsa', 'ecdsa', 'ed25519']
