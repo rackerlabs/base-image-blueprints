@@ -50,21 +50,42 @@ EOF
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
+datasource_list: [ ConfigDrive, None ]
 disable_root: False
 ssh_pwauth: False
 ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
 apt_preserve_sources_list: True
+growpart:
+  mode: auto
+  devices: ['/']
 system_info:
    distro: debian
    default_user:
      name: root
      lock_passwd: True
-     gecos: Debian
-     shell: /bin/bash
-mounts:
- - [ ephemeral0, null ]
+
+cloud_config_modules:
+  - emit_upstart
+  - disk_setup
+  - ssh-import-id
+  - locale
+  - set-passwords
+  - snappy
+  - grub-dpkg
+  - apt-pipelining
+  - apt-configure
+  - package-update-upgrade-install
+  - landscape
+  - timezone
+  - puppet
+  - chef
+  - salt-minion
+  - mcollective
+  - disable-ec2-metadata
+  - runcmd
+  - byobu
 EOF
 
 # cloud-init kludges
@@ -107,8 +128,10 @@ net.ipv4.tcp_sack = 1
 vm.dirty_ratio=5
 EOF
 
-# update fstab for labels
-sed -i 's$/dev/sda1$LABEL=root$g' /etc/fstab
+# Ensure fstab uses root label and remove cdrom
+cat > /etc/fstab <<'EOF'
+LABEL=root  /   ext3    errors=remount-ro   0   1
+EOF
 
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
