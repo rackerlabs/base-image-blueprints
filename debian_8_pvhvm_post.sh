@@ -85,6 +85,27 @@ sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
 update-rc.d xe-linux-distribution defaults
 
+# Update to nova-agent service file
+cat > /lib/systemd/system/python-nova-agent.service <<'EOF'
+[Unit]
+Description=Nova Agent for xenstore
+Before=cloud-init.service
+
+[Service]
+Type=notify
+TimeoutStartSec=360
+ExecStart=/usr/bin/nova-agent --no-fork True -o /var/log/nova-agent.log -l info
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+mkdir /etc/systemd/system/network-online.target.d
+cat > /etc/systemd/system/network-online.target.d/python-nova-agent.conf <<'EOF'
+[Unit]
+After=python-nova-agent.service
+EOF
+
 # Ensure things are started
 systemctl enable python-nova-agent
 systemctl enable cloud-init-local
