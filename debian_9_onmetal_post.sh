@@ -73,6 +73,27 @@ system_info:
    default_user:
      name: root
      lock_passwd: True
+
+cloud_config_modules:
+  - emit_upstart
+  - disk_setup
+  - ssh-import-id
+  - locale
+  - set-passwords
+  - snappy
+  - grub-dpkg
+  - apt-pipelining
+  - apt-configure
+  - package-update-upgrade-install
+  - landscape
+  - timezone
+  - puppet
+  - chef
+  - salt-minion
+  - mcollective
+  - disable-ec2-metadata
+  - runcmd
+  - byobu
 EOF
 
 # cloud-init kludges
@@ -143,7 +164,11 @@ update-grub
 
 # TODO: make update-grub handle persistent boot by labels
 sed -i 's#/dev/sda1#LABEL=root#g' /boot/grub/grub.cfg
-sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
+
+# Ensure fstab uses root label and remove cdrom
+cat > /etc/fstab <<'EOF'
+LABEL=root  /   ext3    errors=remount-ro   0   1
+EOF
 
 #add this to make sure it gets copied to initrd
 echo "INITRDSTART='all'" >> /etc/default/mdadm

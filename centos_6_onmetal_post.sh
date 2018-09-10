@@ -198,7 +198,6 @@ system_info:
 
 cloud_config_modules:
   - disk_setup
-  - mounts
   - ssh-import-id
   - locale
   - set-passwords
