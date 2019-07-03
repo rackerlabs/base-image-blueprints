@@ -767,7 +767,7 @@ EOF
 chmod 0700 /usr/bin/heat-config-notify
 
 # Install SoftwareConfig and Ansible via PIP
-pip install ansible os-collect-config os-apply-config os-refresh-config dib-utils
+pip install ansible==2.4.3.0 os-collect-config os-apply-config os-refresh-config dib-utils
 
 
 # Configure services (and symlinks) assuming CentOS is using systemd
