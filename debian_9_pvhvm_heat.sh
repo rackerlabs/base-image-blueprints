@@ -129,7 +129,7 @@ EOF
 # update all the things
 apt-get update && apt-get -y dist-upgrade
 
-/bin/bash /tmp/tmp/debian_9_pvhvm_heat_post.py
+/bin/bash /tmp/tmp/debian_9_pvhvm_heat.py
 
 # clean up
 passwd -d root
