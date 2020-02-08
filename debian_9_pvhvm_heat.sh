@@ -11,6 +11,16 @@ cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg <<'EOF'
 datasource_list: [ ConfigDrive, None ]
 EOF
 
+cat > /etc/apt/sources.list.d/ospc.list <<'EOF'
+deb [trusted=yes] http://mirror.rackspace.com/ospc/debian/ all main
+EOF
+
+curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
+
+apt-get update
+apt-get install -y python3-nova-agent xe-guest-utilities
+
+
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 datasource_list: [ ConfigDrive, None ]
