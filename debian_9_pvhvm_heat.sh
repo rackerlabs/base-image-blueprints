@@ -11,6 +11,16 @@ cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg <<'EOF'
 datasource_list: [ ConfigDrive, None ]
 EOF
 
+# Add to install python3-nova-agent and xe-guest-utilities
+cat > /etc/apt/sources.list.d/ospc.list <<'EOF'
+deb http://mirror.rackspace.com/ospc/debian/ all main
+EOF
+
+curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
+
+apt-get update
+apt-get install -y python3-nova-agent xe-guest-utilities
+
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 datasource_list: [ ConfigDrive, None ]
@@ -144,5 +154,7 @@ rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
+# Remove as img_config_drive: mandatory is set in image metadata
+rm -f /etc/apt/sources.list.d/ospc.list
 find /var/log -type f -exec truncate -s 0 {} \;
 find /tmp -type f -delete
