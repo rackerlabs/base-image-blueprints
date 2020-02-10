@@ -19,7 +19,7 @@ EOF
 curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
 
 apt-get update
-apt-get install -y python3-nova-agent xe-guest-utilities
+apt-get install -y python3-nova-agent xenstore-utils
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
