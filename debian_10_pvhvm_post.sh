@@ -144,5 +144,5 @@ rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
-# find /var/log -type f -exec truncate -s 0 {} \;
-# find /tmp -type f -delete
+find /var/log -type f -exec truncate -s 0 {} \;
+find /tmp -type f -delete
