@@ -80,8 +80,8 @@ EOF
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 
 # DFOT-3531/CBU-704: Cloud backup workaround
-sed -i 's/#GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet vsyscall=emulate"/g' /etc/default/grub
-sed -i 's/#GRUB_CMDLINE_LINUX.*/GRUB_CMDLINE_LINUX="vsyscall=emulate"/g' /etc/default/grub
+sed -i 's/.*GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet vsyscall=emulate"/g' /etc/default/grub
+sed -i 's/.*GRUB_CMDLINE_LINUX.*/GRUB_CMDLINE_LINUX="vsyscall=emulate"/g' /etc/default/grub
 
 update-grub
 
