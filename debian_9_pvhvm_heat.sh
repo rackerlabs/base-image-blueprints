@@ -19,7 +19,7 @@ EOF
 curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
 
 apt-get update
-apt-get install -y python3-nova-agent xenstore-utils
+apt-get install -y python3-nova-agent xe-guest-utilities
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
@@ -154,7 +154,5 @@ rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
-# Remove as img_config_drive: mandatory is set in image metadata
-rm -f /etc/apt/sources.list.d/ospc.list
 find /var/log -type f -exec truncate -s 0 {} \;
 find /tmp -type f -delete
