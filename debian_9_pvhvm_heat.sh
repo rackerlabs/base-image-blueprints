@@ -93,10 +93,6 @@ update-grub
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
-# some systemd workarounds
-sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
-update-rc.d xe-linux-distribution defaults
-
 # Update to nova-agent service file
 cat > /lib/systemd/system/python3-nova-agent.service <<'EOF'
 [Unit]
@@ -121,7 +117,6 @@ EOF
 
 # Ensure the agent is started at boot
 systemctl enable python3-nova-agent
-systemctl enable xe-linux-distribution
 systemctl daemon-reload
 
 # ssh permit rootlogin
