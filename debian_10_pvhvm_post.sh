@@ -11,7 +11,7 @@ cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg <<'EOF'
 datasource_list: [ ConfigDrive, None ]
 EOF
 
-# Add to install python3-nova-agent and xe-guest-utilities
+# Add to install python3-nova-agent
 cat > /etc/apt/sources.list.d/ospc.list <<'EOF'
 deb http://mirror.rackspace.com/ospc/debian/ all main
 EOF
@@ -19,7 +19,7 @@ EOF
 curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
 
 apt-get update
-apt-get install -y python3-nova-agent xe-guest-utilities
+apt-get install -y python3-nova-agent
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
@@ -99,10 +99,6 @@ update-grub
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
-# some systemd workarounds
-sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
-update-rc.d xe-linux-distribution defaults
-
 # Update to nova-agent service file
 cat > /lib/systemd/system/python3-nova-agent.service <<'EOF'
 [Unit]
@@ -127,7 +123,6 @@ EOF
 
 # Ensure the agent is started at boot
 systemctl enable python3-nova-agent
-systemctl enable xe-linux-distribution
 systemctl daemon-reload
 
 # ssh permit rootlogin
