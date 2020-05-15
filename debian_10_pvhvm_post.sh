@@ -11,6 +11,10 @@ cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg <<'EOF'
 datasource_list: [ ConfigDrive, None ]
 EOF
 
+# Add gnupg before adding the mirror.rackspace.com gnupg key
+apt-get update
+apt-get install -y gnupg
+
 # Add to install python3-nova-agent
 cat > /etc/apt/sources.list.d/ospc.list <<'EOF'
 deb http://mirror.rackspace.com/ospc/debian/ all main
@@ -18,7 +22,6 @@ EOF
 
 curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
 
-apt-get update
 apt-get install -y python3-nova-agent xenstore-utils
 
 # our cloud-init config
