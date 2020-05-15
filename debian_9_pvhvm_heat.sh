@@ -11,15 +11,7 @@ cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg <<'EOF'
 datasource_list: [ ConfigDrive, None ]
 EOF
 
-# Add to install python3-nova-agent
-cat > /etc/apt/sources.list.d/ospc.list <<'EOF'
-deb http://mirror.rackspace.com/ospc/debian/ all main
-EOF
-
-curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
-
 apt-get update
-apt-get install -y python3-nova-agent
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
@@ -92,32 +84,6 @@ update-grub
 
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
-
-# Update to nova-agent service file
-cat > /lib/systemd/system/python3-nova-agent.service <<'EOF'
-[Unit]
-DefaultDependencies=no
-Description=Nova Agent for xenstore
-Before=cloud-init.service
-
-[Service]
-Type=notify
-TimeoutStartSec=360
-ExecStart=/usr/bin/nova-agent --no-fork True -o /var/log/nova-agent.log -l info
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-mkdir /etc/systemd/system/network-online.target.d
-cat > /etc/systemd/system/network-online.target.d/python3-nova-agent.conf <<'EOF'
-[Unit]
-After=python3-nova-agent.service
-EOF
-
-# Ensure the agent is started at boot
-systemctl enable python3-nova-agent
-systemctl daemon-reload
 
 # ssh permit rootlogin
 sed -i '/^PermitRootLogin/s/prohibit-password/yes/g' /etc/ssh/sshd_config
