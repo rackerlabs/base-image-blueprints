@@ -22,7 +22,8 @@ EOF
 
 curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
 
-apt-get install -y python3-nova-agent xenstore-utils
+apt-get update
+apt-get install -y python3-nova-agent
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
@@ -66,17 +67,6 @@ EOF
 
 # set some stuff
 echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
-echo 'vm.swappiness = 0' >> /etc/sysctl.conf
-
-cat >> /etc/sysctl.conf <<'EOF'
-net.ipv4.tcp_rmem = 4096 87380 33554432
-net.ipv4.tcp_wmem = 4096 65536 33554432
-net.core.rmem_max = 33554432
-net.core.wmem_max = 33554432
-net.ipv4.tcp_window_scaling = 1
-net.ipv4.tcp_timestamps = 1
-net.ipv4.tcp_sack = 1
-EOF
 
 cat > /etc/fstab <<'EOF'
 # /etc/fstab: static file system information.
@@ -96,37 +86,10 @@ sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/defa
 sed -i 's/.*GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="vsyscall=emulate"/g' /etc/default/grub
 sed -i 's/.*GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet vsyscall=emulate"/g' /etc/default/grub
 
-
 update-grub
 
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
-
-# Update to nova-agent service file
-cat > /lib/systemd/system/python3-nova-agent.service <<'EOF'
-[Unit]
-DefaultDependencies=no
-Description=Nova Agent for xenstore
-Before=cloud-init.service
-
-[Service]
-Type=notify
-TimeoutStartSec=360
-ExecStart=/usr/bin/nova-agent --no-fork True -o /var/log/nova-agent.log -l info
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-mkdir /etc/systemd/system/network-online.target.d
-cat > /etc/systemd/system/network-online.target.d/python3-nova-agent.conf <<'EOF'
-[Unit]
-After=python3-nova-agent.service
-EOF
-
-# Ensure the agent is started at boot
-systemctl enable python3-nova-agent
-systemctl daemon-reload
 
 # ssh permit rootlogin
 sed -i '/^PermitRootLogin/s/prohibit-password/yes/g' /etc/ssh/sshd_config
@@ -160,3 +123,4 @@ rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
 find /var/log -type f -exec truncate -s 0 {} \;
 find /tmp -type f -delete
+
