@@ -11,7 +11,20 @@ cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg <<'EOF'
 datasource_list: [ ConfigDrive, None ]
 EOF
 
+# Add gnupg before adding the mirror.rackspace.com gnupg key
 apt-get update
+apt-get install -y gnupg
+
+curl -s http://mirror.rackspace.com/ospc/public.gpg.key | sudo apt-key add -
+
+# Add to install python3-nova-agent	
+cat > /etc/apt/sources.list.d/ospc.list <<'EOF'	
+deb http://mirror.rackspace.com/ospc/debian/ all main	
+EOF
+
+apt-get update
+apt-get install -y python3-nova-agent xe-guest-utilities
+
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
@@ -55,17 +68,6 @@ EOF
 
 # set some stuff
 echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
-echo 'vm.swappiness = 0' >> /etc/sysctl.conf
-
-cat >> /etc/sysctl.conf <<'EOF'
-net.ipv4.tcp_rmem = 4096 87380 33554432
-net.ipv4.tcp_wmem = 4096 65536 33554432
-net.core.rmem_max = 33554432
-net.core.wmem_max = 33554432
-net.ipv4.tcp_window_scaling = 1
-net.ipv4.tcp_timestamps = 1
-net.ipv4.tcp_sack = 1
-EOF
 
 cat > /etc/fstab <<'EOF'
 # /etc/fstab: static file system information.
@@ -117,3 +119,4 @@ rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
 find /var/log -type f -exec truncate -s 0 {} \;
 find /tmp -type f -delete
+
