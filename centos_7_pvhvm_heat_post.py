@@ -108,7 +108,6 @@ def delete_some_other_things():
     os.system('rm -rf /var/lib/cloud/sem/config_scripts_per_once.once')
     os.system('rm -rf /var/log/cloud-init.log')
     os.system('rm -rf /var/log/cloud-init-output.log')
-    os.system('rm -rf ')
     print('\n\n\nDone!')
 
 
