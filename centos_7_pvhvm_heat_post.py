@@ -7,7 +7,6 @@ import os
 import subprocess
 import shutil
 
-
 # Install required packages via yum
 def install_packages():
     package_list = ['python-pip',
@@ -59,7 +58,6 @@ def download_git():
 # Move configuration files to the proper location on the OS
 # ...and use a really ghetto create directory for the move
 # chmod files properly
-
 def configurate():
     file_list = ['opt/stack/os-config-refresh/configure.d/20-os-apply-config',
                  'opt/stack/os-config-refresh/configure.d/55-heat-config',
@@ -75,8 +73,8 @@ def configurate():
         directory = os.path.dirname('/' + file)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        print('hotstrapper-master/rhel/7/' + file + '\t->\t' + '/' + file)
-        shutil.move('hotstrapper-master/rhel/7/' + file, '/' + file)
+        print('hotstrapper-master/bootstrap/centos/7/' + file + '\t->\t' + '/' + file)
+        shutil.move('hotstrapper-master/bootstrap/centos/7/' + file, '/' + file)
     for i in range(3):
         os.chmod('/' + file_list[i], 0700)
     for i in range(3, 6):
@@ -93,7 +91,7 @@ def jiggle_some_things():
     os.system('cat /etc/os-collect-config.conf')
     os.system('os-collect-config --one-time --debug')
     print('\nEnsuring everything is running & enabled on boot')
-    subprocess.call('hotstrapper-master/rhel/7/start_config_agent.sh')
+    subprocess.call('hotstrapper-master/bootstrap/centos/7/start_config_agent.sh')
     print('\nCleaning up git folder')
     shutil.rmtree('hotstrapper-master/')
     os.system('rm -f master.zip')
@@ -108,6 +106,7 @@ def delete_some_other_things():
     os.system('rm -rf /var/lib/cloud/sem/config_scripts_per_once.once')
     os.system('rm -rf /var/log/cloud-init.log')
     os.system('rm -rf /var/log/cloud-init-output.log')
+    os.system('rm -rf ')
     print('\n\n\nDone!')
 
 
@@ -117,3 +116,4 @@ download_git()
 configurate()
 jiggle_some_things()
 delete_some_other_things()
+exit(0)
