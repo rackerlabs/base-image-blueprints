@@ -12,6 +12,8 @@ def install_packages():
     package_list = ['python-pip',
                     'gcc',
                     'python-devel',
+                    'python3',
+                    'python3-devel',
                     'libyaml-devel',
                     'openssl-devel',
                     'libffi-devel',
@@ -31,27 +33,24 @@ def install_packages():
 # Install required packages via pip
 def pip_down():
     print('\nInstalling OpenStack HEAT requirements via pip')
-    os_list = ['setuptools==36.2.7',
-               '-U pip==20.1.1',
-               '--ignore-installed os-apply-config==11.2.0',
-               '--ignore-installed os-collect-config==5.0.0',
-               'os-refresh-config==10.4.0',
-               'dib-utils==0.0.11',
-               '-U decorator',
-               'ansible==2.4.3.0']
+    os_list = ['os-apply-config',
+               'os-collect-config',
+               'os-refresh-config',
+               'dib-utils']
     try:
         for package in os_list:
             print('Installing ' + package)
-            os.system('pip install ' + package + '>/dev/null')
+            os.system('python3 -m pip install ' + package)
             print('Successful')
     except:
         print('Unsuccessful')
+    os.system('pip install ansible==2.4.3.0')
 
 
 # Remove git repo if it exist (should never come up but might as well)
 # Clone git repo that has all our configuration files
 def download_git():
-    endpoint = 'https://github.com/kmcjunk/hotstrapper/archive/master.zip'
+    endpoint = 'https://github.com/rockymccamey/hotstrapper/archive/master.zip'
     os.system('wget {}'.format(endpoint))
     os.system('unzip master.zip')
 
