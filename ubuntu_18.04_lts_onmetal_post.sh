@@ -21,11 +21,6 @@ dpkg -i vlan_1.9-3ubuntu10_amd64.deb
 echo -e 'Package: vlan\nPin: version 1.9-3ubuntu10\nPin-Priority: -1' > /etc/apt/preferences.d/vlan
 
 
-# custom teeth cloud-init bit
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7.2-py2-upstart.deb
-dpkg -i *.deb
-apt-mark hold cloud-init
-
 # breaks networking if missing
 mkdir -p /run/network
 
@@ -47,6 +42,8 @@ system_info:
      lock_passwd: True
      gecos: Ubuntu
      shell: /bin/bash
+   network:
+     renders: ['netplan', 'eni']
 EOF
 
 # preseeds/debconf do not work for this anymore :(
@@ -73,6 +70,7 @@ echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 # minimal network conf
 # causes boot delay if left out, no bueno
 cat > /etc/network/interfaces <<'EOF'
+source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
 EOF
@@ -88,16 +86,6 @@ ff02::2 ip6-allrouters
 127.0.0.1 localhost
 EOF
 
-cat >> /etc/sysctl.conf <<'EOF'
-net.ipv4.tcp_rmem = 4096 87380 33554432
-net.ipv4.tcp_wmem = 4096 65536 33554432
-net.core.rmem_max = 33554432
-net.core.wmem_max = 33554432
-net.ipv4.tcp_window_scaling = 1
-net.ipv4.tcp_timestamps = 1
-net.ipv4.tcp_sack = 1
-vm.dirty_ratio=5
-EOF
 
 # Grub fixups
 cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
